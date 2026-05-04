@@ -9,9 +9,9 @@ public class EventBus {
     private final Map<Class<? extends Evento>, List<Suscriptor>> suscriptores = new ConcurrentHashMap<>();
 
     /* Registra un suscriptor para un tipo de evento específico. */
-    public <T extends Evento> void suscribir(Class<T> tipoEvento, Suscriptor<T> suscriptor) {
+    public <T extends Evento> void suscribir(Class<T> tipoEvento, Suscriptor<? super T> suscriptor) {
         suscriptores.computeIfAbsent(tipoEvento, k -> new CopyOnWriteArrayList<>())
-                .add(suscriptor);
+                .add((Suscriptor<Evento>) suscriptor); // Cast seguro para el mapa interno
 
         System.out.println("[EVENT BUS] Nuevo suscriptor registrado para: " + tipoEvento.getSimpleName());
     }

@@ -1,35 +1,74 @@
 package tabernaMain;
 
 import tabernaBus.EventBus;
-import tabernaComponentes.Barra;
+import tabernaComponentes.*;
+import tabernaEventos.BandaTocandoEvent;
+import tabernaEventos.BebidaServidaEvent;
+import tabernaEventos.ComidaPreparadaEvent;
 import tabernaEventos.PedidoRealizadoEvent;
 import java.util.List;
 
 public class Main {
     public static void main(String[] args) {
-        // 1. Instanciar el EventBus (El motor central)
         EventBus bus = new EventBus();
 
-        // 2. Instanciar los Componentes
-        // Nota: Por ahora la Barra no necesita el bus en el constructor
-        // porque solo está escuchando, pero lo necesitaremos más adelante.
         Barra barra = new Barra(bus);
+        Cocina cocina = new Cocina(bus);
+        Banda banda = new Banda(bus);
 
-        // 3. Suscribir los componentes al Bus
-        // Le decimos al bus: "Cuando pase un PedidoRealizadoEvent, avísale a la barra"
+        PanelLED panel = new PanelLED();
+        SistemaDeSonido sonido = new SistemaDeSonido();
+        SistemaDeHumo humo = new SistemaDeHumo();
+
         bus.suscribir(PedidoRealizadoEvent.class, barra);
+        bus.suscribir(PedidoRealizadoEvent.class, cocina);
 
-        System.out.println("\n--- INICIANDO SIMULACIÓN DE LA TABERNA ---\n");
+        bus.suscribir(BebidaServidaEvent.class, panel);
+        bus.suscribir(ComidaPreparadaEvent.class, panel);
 
-        // 4. Crear un evento manualmente y publicarlo
-        // Simulamos que un cliente pide una Cerveza y un Mezcal en la Mesa 5
-        PedidoRealizadoEvent primerPedido = new PedidoRealizadoEvent(
+        bus.suscribir(BandaTocandoEvent.class, sonido);
+        bus.suscribir(BandaTocandoEvent.class, panel);
+        bus.suscribir(BandaTocandoEvent.class, humo);
+
+        System.out.println("==================================================");
+        System.out.println("   BIENVENIDOS A LA TABERNA EL GÓLEM ALQUÍMICO   ");
+        System.out.println("==================================================\n");
+
+        banda.tocarCancion("Queen", "Tie Your Mother Down", 180);
+
+        System.out.println("\n[SISTEMA] Registrando pedido de la Mesa 5...");
+        bus.publicar(new PedidoRealizadoEvent(
                 "Mesa 5",
-                "ORD-001",
-                List.of("Cerveza", "Mezcal")
-        );
+                "PED-001",
+                List.of("Cerveza", "Hamburguesa")
+        ));
 
-        System.out.println("[SISTEMA] Publicando pedido...");
-        bus.publicar(primerPedido);
+        try { Thread.sleep(3000); } catch (InterruptedException e) {}
+
+        System.out.println("\n");
+        banda.tocarCancion("The Beatles", "Let It Be", 300);
+
+        System.out.println("\n[SISTEMA] Registrando pedido de la Mesa 7...");
+        bus.publicar(new PedidoRealizadoEvent(
+                "Mesa 7",
+                "PED-002",
+                List.of("Soda", "Papas Fritas")
+        ));
+
+        try { Thread.sleep(3000); } catch (InterruptedException e) {}
+
+        System.out.println("\n[SISTEMA] ¡La banda cambia el ritmo!");
+        banda.tocarCancion("DragonForce", "Through the Fire and Flames", 440);
+
+        try {
+            System.out.println("\n[SISTEMA] Esperando a que terminen los procesos asíncronos...");
+            Thread.sleep(7000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        System.out.println("\n==================================================");
+        System.out.println("=             FIN DE LA SIMULACIÓN               =");
+        System.out.println("==================================================");
     }
 }
