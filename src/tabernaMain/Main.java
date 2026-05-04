@@ -13,7 +13,7 @@ public class Main {
         // 2. Instanciar los Componentes
         // Nota: Por ahora la Barra no necesita el bus en el constructor
         // porque solo está escuchando, pero lo necesitaremos más adelante.
-        Barra barra = new Barra();
+        Barra barra = new Barra(bus);
 
         // 3. Suscribir los componentes al Bus
         // Le decimos al bus: "Cuando pase un PedidoRealizadoEvent, avísale a la barra"

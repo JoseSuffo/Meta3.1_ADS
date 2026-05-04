@@ -1,18 +1,32 @@
 package tabernaComponentes;
 
+import tabernaBus.EventBus;
 import tabernaBus.Suscriptor;
+import tabernaEventos.BebidaServidaEvent;
 import tabernaEventos.PedidoRealizadoEvent;
+import java.util.concurrent.CompletableFuture;
 
-/* La Barra es un componente que escucha pedidos para servir bebidas. */
 public class Barra implements Suscriptor<PedidoRealizadoEvent> {
+    private final EventBus bus;
+
+    public Barra(EventBus bus) {
+        this.bus = bus;
+    }
 
     @Override
     public void onEvent(PedidoRealizadoEvent evento) {
-        System.out.println("--------------------------------------------------");
-        System.out.println("[BARRA] ¡Recibí un pedido!");
-        System.out.println("[BARRA] Mesa: " + evento.mesaId());
-        System.out.println("[BARRA] ID Pedido: " + evento.pedidoId());
-        System.out.println("[BARRA] Items a revisar: " + evento.items());
-        System.out.println("--------------------------------------------------");
+        for (String item : evento.items()) {
+            if (item.equalsIgnoreCase("Cerveza") || item.equalsIgnoreCase("Vino")) {
+                CompletableFuture.runAsync(() -> {
+                    try {
+                        System.out.println("[BARRA] Preparando " + item + " para la " + evento.mesaId() + "...");
+                        Thread.sleep(2000);
+                        bus.publicar(new BebidaServidaEvent(evento.mesaId(), item));
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
+                });
+            }
+        }
     }
 }
